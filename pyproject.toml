@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentsearchcli"
+version = "1.0.0"
+description = "Give any AI agent the ability to search, crawl, and extract the web."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Qwert", email = "hello@qwert.ai"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["web-search", "ai-agents", "web-scraping", "proxy", "cli"]
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.0.0",
+    "requests>=2.28.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.30.0"]
+dev = ["pytest>=7.0.0", "pytest-cov>=4.0.0", "black>=23.0.0", "mypy>=1.0.0"]
+
+[project.scripts]
+search = "agent_search.cli.main:main"
+agent-search = "agent_search.cli.main:main_alias"
+
+[project.urls]
+Homepage = "https://qwert.ai"
+Documentation = "https://qwert.ai/docs"
+Repository = "https://github.com/r0botsorg/agent-search-cli"
+"Bug Tracker" = "https://github.com/r0botsorg/agent-search-cli/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']

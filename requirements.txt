@@ -1,0 +1,47 @@
+# Core dependencies
+requests>=2.31.0
+urllib3>=2.0.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Async support
+aiohttp>=3.8.0
+aiofiles>=23.0.0
+
+# HTML to Markdown
+html2text>=2020.1.16
+markdownify>=0.11.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Browser automation (optional)
+playwright>=1.40.0
+
+# Proxy support
+requests[socks]>=2.31.0
+httpx[socks]>=0.25.0
+aiohttp-socks>=0.8.0
+
+# AWS IP rotation
+boto3>=1.28.0
+requests-ip-rotator>=1.0.0
+
+# Rate limiting
+ratelimit>=2.2.0
+
+# CLI
+click>=8.0.0
+
+# LLM support (optional)
+openai>=1.0.0
+litellm>=1.0.0
+
+# Monitoring
+prometheus-client>=0.18.0
+
+# Utilities
+python-dateutil>=2.8.0
+tqdm>=4.65.0
+rich>=13.0.0
+pyyaml>=6.0.0
