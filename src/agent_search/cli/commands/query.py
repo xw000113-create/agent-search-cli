@@ -27,31 +27,62 @@ def execute_query(
         search_url = f"{search_endpoint}/search?q={query}"
         click.echo("📡 Fetching results...", err=True)
 
+        data = None
+        results = None
+
         if pro:
-            # Pro mode - use hosted API (placeholder implementation)
-            click.echo("🚀 Using Pro mode (hosted)...", err=True)
-            api_key = os.getenv("AGENT_SEARCH_API_KEY")
-            if not api_key:
-                click.echo(
-                    "⚠️  No API key found. Set AGENT_SEARCH_API_KEY environment variable.",
-                    err=True,
-                )
-                click.echo("   Falling back to Lite mode...", err=True)
-            else:
-                # In production, this would call the Pro API
-                click.echo(f"   API Key: {api_key[:8]}...", err=True)
+            # Pro mode - prefer Tavily if available, otherwise use hosted API
+            tavily_api_key = os.getenv("TAVILY_API_KEY")
+            if tavily_api_key:
+                click.echo("🚀 Using Pro mode (Tavily)...", err=True)
+                try:
+                    from tavily import TavilyClient
 
-        # Use Lite mode (self-hosted) - fetch JSON from Whoogle
-        import requests
+                    client = TavilyClient(api_key=tavily_api_key)
+                    tavily_response = client.search(query=query, max_results=10)
+                    tavily_results = tavily_response.get("results", [])
 
-        # Fetch JSON results from Whoogle
-        click.echo(f" URL: {search_url}", err=True)
-        headers = {"Accept": "application/json"}
-        response = requests.get(search_url, headers=headers, timeout=30)
-        data = response.json()
+                    # Normalize to the same shape used by Whoogle results
+                    data = {
+                        "query": query,
+                        "results": [
+                            {
+                                "title": r.get("title", "Untitled"),
+                                "url": r.get("url", "#"),
+                                "content": r.get("content", ""),
+                            }
+                            for r in tavily_results
+                        ],
+                    }
+                    results = data["results"]
+                except Exception as e:
+                    click.echo(f"⚠️  Tavily error: {e}. Falling back to Lite mode...", err=True)
 
-        # Parse results
-        results = data.get("results", [])
+            if results is None:
+                click.echo("🚀 Using Pro mode (hosted)...", err=True)
+                api_key = os.getenv("AGENT_SEARCH_API_KEY")
+                if not api_key:
+                    click.echo(
+                        "⚠️  No API key found. Set AGENT_SEARCH_API_KEY or TAVILY_API_KEY.",
+                        err=True,
+                    )
+                    click.echo("   Falling back to Lite mode...", err=True)
+                else:
+                    # In production, this would call the Pro API
+                    click.echo(f"   API Key: {api_key[:8]}...", err=True)
+
+        if results is None:
+            # Use Lite mode (self-hosted) - fetch JSON from Whoogle
+            import requests
+
+            # Fetch JSON results from Whoogle
+            click.echo(f" URL: {search_url}", err=True)
+            headers = {"Accept": "application/json"}
+            response = requests.get(search_url, headers=headers, timeout=30)
+            data = response.json()
+
+            # Parse results
+            results = data.get("results", [])
 
         # Format based on output format
         if format == "json":
