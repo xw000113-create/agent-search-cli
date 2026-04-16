@@ -31,6 +31,7 @@ class MultiEngineSearch:
         # Engine endpoints
         self.whoogle_url = os.getenv("AGENT_SEARCH_ENDPOINT", "http://localhost:15000")
         self.bing_api_key = os.getenv("BING_SEARCH_API_KEY")
+        self.tavily_api_key = os.getenv("TAVILY_API_KEY")
 
     def search(self, query: str, max_results: int = 10) -> Dict[str, Any]:
         """
@@ -74,6 +75,16 @@ class MultiEngineSearch:
                     engines_used.append("bing")
             except Exception as e:
                 errors.append(f"Bing: {str(e)}")
+
+        # Try Tavily if API key available
+        if self.tavily_api_key:
+            try:
+                tavily_results = self._search_tavily(query)
+                if tavily_results:
+                    all_results.extend(tavily_results)
+                    engines_used.append("tavily")
+            except Exception as e:
+                errors.append(f"Tavily: {str(e)}")
 
         # Fallback: Try Wikipedia API (no key needed, real results)
         if not all_results:
@@ -203,6 +214,30 @@ class MultiEngineSearch:
                         "score": 0.8,
                     }
                 )
+
+        return results
+
+    def _search_tavily(self, query: str) -> List[Dict[str, Any]]:
+        """Search using Tavily API."""
+        if not self.tavily_api_key:
+            return []
+
+        from tavily import TavilyClient
+
+        client = TavilyClient(api_key=self.tavily_api_key)
+        response = client.search(query=query, max_results=10)
+
+        results = []
+        for item in response.get("results", []):
+            results.append(
+                {
+                    "title": item.get("title", "Untitled"),
+                    "url": item.get("url", "#"),
+                    "snippet": item.get("content", ""),
+                    "source": "tavily",
+                    "score": item.get("score", 0.85),
+                }
+            )
 
         return results
 
