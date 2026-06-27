@@ -34,6 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 browser = ["playwright>=1.30.0"]
+tavily = ["tavily-python>=0.3.0"]
 dev = ["pytest>=7.0.0", "pytest-cov>=4.0.0", "black>=23.0.0", "mypy>=1.0.0"]
 
 [project.scripts]
