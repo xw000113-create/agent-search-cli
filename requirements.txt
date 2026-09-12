@@ -40,6 +40,9 @@ litellm>=1.0.0
 # Monitoring
 prometheus-client>=0.18.0
 
+# Tavily search (optional)
+tavily-python>=0.3.0
+
 # Utilities
 python-dateutil>=2.8.0
 tqdm>=4.65.0
