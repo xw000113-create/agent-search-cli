@@ -21,6 +21,78 @@ def execute_query(
 
     click.echo(f"🔍 Searching: {query}", err=True)
 
+    # Check for Tavily API key — use as higher-priority search provider
+    tavily_api_key = os.getenv("TAVILY_API_KEY")
+    if tavily_api_key:
+        try:
+            from tavily import TavilyClient
+
+            click.echo("📡 Fetching results via Tavily...", err=True)
+            client = TavilyClient(api_key=tavily_api_key)
+            tavily_response = client.search(
+                query=query,
+                max_results=10,
+                search_depth="basic",
+            )
+            tavily_results = tavily_response.get("results", [])
+
+            if tavily_results:
+                # Build a data structure compatible with the existing formatters
+                data = {
+                    "query": query,
+                    "results": [
+                        {
+                            "title": r.get("title", "Untitled"),
+                            "url": r.get("url", "#"),
+                            "href": r.get("url", "#"),
+                            "content": r.get("content", ""),
+                            "text": r.get("content", ""),
+                            "snippet": r.get("content", "")[:300],
+                        }
+                        for r in tavily_results
+                    ],
+                }
+                results = data["results"]
+
+                # Format output
+                if format == "json":
+                    import json
+
+                    result = json.dumps(data, indent=2)
+                elif format == "html":
+                    html_parts = [f"<h1>Search Results for: {query}</h1>"]
+                    for item in results[:10]:
+                        title = item.get("title", "Untitled")
+                        url = item.get("url", "#")
+                        content = item.get("content", "")
+                        html_parts.append('<div class="result">')
+                        html_parts.append(f'<h3><a href="{url}">{title}</a></h3>')
+                        html_parts.append(f"<p>{content[:300]}...</p>")
+                        html_parts.append(f"<small>{url}</small>")
+                        html_parts.append("</div>")
+                    result = "\n".join(html_parts)
+                else:
+                    md_parts = [f"# Search Results for: {query}\n"]
+                    md_parts.append(f"Found {len(results)} results (via Tavily)\n")
+                    for i, item in enumerate(results[:10], 1):
+                        title = item.get("title", "Untitled")
+                        url = item.get("url", "#")
+                        content = item.get("content", "")
+                        md_parts.append(f"## {i}. {title}")
+                        md_parts.append(f"**URL:** {url}")
+                        md_parts.append(f"\n{content[:300]}...\n")
+                    result = "\n".join(md_parts)
+
+                if output:
+                    with open(output, "w") as f:
+                        f.write(result)
+                    click.echo(f"✅ Results saved to: {output}", err=True)
+                else:
+                    click.echo(result)
+                return
+        except Exception as e:
+            click.echo(f"⚠️  Tavily search failed: {e}. Falling back to Whoogle...", err=True)
+
     try:
         # Get search URL from environment or use default
         search_endpoint = os.getenv("AGENT_SEARCH_ENDPOINT", "http://localhost:15000")
