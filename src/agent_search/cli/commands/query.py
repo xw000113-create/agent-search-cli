@@ -44,11 +44,32 @@ def execute_query(
         # Use Lite mode (self-hosted) - fetch JSON from Whoogle
         import requests
 
-        # Fetch JSON results from Whoogle
-        click.echo(f" URL: {search_url}", err=True)
-        headers = {"Accept": "application/json"}
-        response = requests.get(search_url, headers=headers, timeout=30)
-        data = response.json()
+        # Optional You.com engine: YDC_API_KEY (keyed), or AGENT_SEARCH_YOUCOM=1 (keyless)
+        from agent_search.core.multi_search import youcom_enabled, youcom_search
+
+        data = None
+        if youcom_enabled():
+            try:
+                click.echo("📡 Fetching results via You.com...", err=True)
+                youcom_data = youcom_search(query, max_results=10)
+                if youcom_data.get("results"):
+                    data = youcom_data
+                else:
+                    click.echo(
+                        "ℹ️  You.com returned no results. Falling back to Whoogle...",
+                        err=True,
+                    )
+            except Exception as e:
+                click.echo(
+                    f"⚠️  You.com search failed: {e}. Falling back to Whoogle...", err=True
+                )
+
+        if data is None:
+            # Fetch JSON results from Whoogle
+            click.echo(f" URL: {search_url}", err=True)
+            headers = {"Accept": "application/json"}
+            response = requests.get(search_url, headers=headers, timeout=30)
+            data = response.json()
 
         # Parse results
         results = data.get("results", [])

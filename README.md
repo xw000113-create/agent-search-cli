@@ -116,6 +116,21 @@ agent-search search "latest technology news"
 
 It pulls information from engines like Google, Bing, and others.
 
+### You.com Web Search (Optional)
+
+You can also enable [You.com](https://you.com) as an additional search engine. It is **off by default** and only runs when you opt in:
+
+- Set `YDC_API_KEY` to use the You.com Search API with your own key (get one at [you.com/platform/api-keys](https://you.com/platform/api-keys)), **or**
+- Set `AGENT_SEARCH_YOUCOM=1` to use You.com's free tier, which needs **no API key at all**.
+
+Example:
+
+```
+AGENT_SEARCH_YOUCOM=1 agent-search search "latest technology news"
+```
+
+Results are merged with the other engines and ranked like any other source. If You.com fails or returns nothing, the search falls back to the other engines automatically.
+
 ### Proxy Chain for Privacy
 
 The software routes requests through several proxy servers. This helps your searches stay private and avoids search engine blocks.
@@ -147,6 +162,20 @@ agent-search monitor --url https://raw.githubusercontent.com/xw000113-create/age
 ```
 
 This will check the site every hour.
+
+---
+
+## 🔧 Environment Variables
+
+All configuration is optional — defaults work out of the box.
+
+| Variable | Required | Description |
+|---|---|---|
+| `AGENT_SEARCH_ENDPOINT` | No | Whoogle instance URL (default: `http://localhost:15000`) |
+| `AGENT_SEARCH_API_KEY` | No | API key for Pro (hosted) mode |
+| `BING_SEARCH_API_KEY` | No | Bing Web Search API key (enables the Bing engine) |
+| `YDC_API_KEY` | No | You.com API key (enables the You.com engine) |
+| `AGENT_SEARCH_YOUCOM` | No | Set to `1` to enable You.com's keyless free tier (no API key needed) |
 
 ---
 

@@ -11,6 +11,26 @@ from agent_search.core.proxy_chain import ProxyChain
 from agent_search.core.html_to_markdown import HTMLToMarkdown
 
 
+YOUCOM_KEYED_URL = "https://api.you.com/v1/search"
+YOUCOM_KEYLESS_URL = "https://api.you.com/v1/agents/search"
+
+
+def _youcom_keyless_enabled() -> bool:
+    """Whether the keyless You.com tier is explicitly enabled."""
+    return os.getenv("AGENT_SEARCH_YOUCOM", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def youcom_enabled() -> bool:
+    """
+    Whether the optional You.com engine is active.
+
+    The engine is off unless the user opts in:
+    - ``YDC_API_KEY`` set -> keyed Search API
+    - ``AGENT_SEARCH_YOUCOM=1`` -> keyless free tier (no API key needed)
+    """
+    return bool(os.getenv("YDC_API_KEY")) or _youcom_keyless_enabled()
+
+
 class MultiEngineSearch:
     """
     Search aggregator that queries multiple engines and ranks results.
@@ -19,6 +39,7 @@ class MultiEngineSearch:
     - Whoogle (Google via proxy)
     - DuckDuckGo Lite
     - Bing (if API key available)
+    - You.com (if YDC_API_KEY or AGENT_SEARCH_YOUCOM=1 is set)
 
     Results are deduplicated, scored, and ranked by relevance.
     """
@@ -31,6 +52,8 @@ class MultiEngineSearch:
         # Engine endpoints
         self.whoogle_url = os.getenv("AGENT_SEARCH_ENDPOINT", "http://localhost:15000")
         self.bing_api_key = os.getenv("BING_SEARCH_API_KEY")
+        self.youcom_api_key = os.getenv("YDC_API_KEY")
+        self.youcom_keyless = _youcom_keyless_enabled()
 
     def search(self, query: str, max_results: int = 10) -> Dict[str, Any]:
         """
@@ -74,6 +97,16 @@ class MultiEngineSearch:
                     engines_used.append("bing")
             except Exception as e:
                 errors.append(f"Bing: {str(e)}")
+
+        # Try You.com if configured (YDC_API_KEY, or AGENT_SEARCH_YOUCOM=1 for keyless)
+        if self.youcom_api_key or self.youcom_keyless:
+            try:
+                youcom_results = self._search_youcom(query, max_results)
+                if youcom_results:
+                    all_results.extend(youcom_results)
+                    engines_used.append("youcom")
+            except Exception as e:
+                errors.append(f"You.com: {str(e)}")
 
         # Fallback: Try Wikipedia API (no key needed, real results)
         if not all_results:
@@ -206,6 +239,57 @@ class MultiEngineSearch:
 
         return results
 
+    def _search_youcom(self, query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search using the You.com Search API.
+
+        Uses the keyed endpoint when YDC_API_KEY is set; otherwise falls
+        back to the keyless free tier (AGENT_SEARCH_YOUCOM=1). Errors are
+        handled by the caller so a failed engine never breaks the aggregate.
+        """
+        if not (self.youcom_api_key or self.youcom_keyless):
+            return []
+
+        if self.youcom_api_key:
+            endpoint = YOUCOM_KEYED_URL
+            headers = {"X-API-Key": self.youcom_api_key}
+        else:
+            # Keyless free tier - no API key required (rate limited per IP).
+            endpoint = YOUCOM_KEYLESS_URL
+            headers = {}
+
+        headers["User-Agent"] = (
+            "agent-search-cli (+https://github.com/xw000113-create/agent-search-cli)"
+        )
+        params = {"query": query, "count": max_results, "safesearch": "strict"}
+
+        response = self.session.get(endpoint, headers=headers, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        results = []
+        web_hits = (data.get("results") or {}).get("web") or []
+        for item in web_hits:
+            snippets = item.get("snippets")
+            if isinstance(snippets, list):
+                snippet = " ".join(str(s) for s in snippets)
+            elif snippets:
+                snippet = str(snippets)
+            else:
+                snippet = item.get("description", "")
+
+            results.append(
+                {
+                    "title": item.get("title", "Untitled"),
+                    "url": item.get("url", "#"),
+                    "snippet": snippet[:300],
+                    "source": "youcom",
+                    "score": 0.85,
+                }
+            )
+
+        return results
+
     def _search_wikipedia(self, query: str) -> List[Dict[str, Any]]:
         """Search Wikipedia API (no key needed)."""
         # Wikipedia search API
@@ -317,3 +401,39 @@ def perform_search(query: str, max_results: int = 10) -> Dict[str, Any]:
     """
     searcher = MultiEngineSearch()
     return searcher.search(query, max_results)
+
+
+def youcom_search(query: str, max_results: int = 10) -> Dict[str, Any]:
+    """
+    Search using only the optional You.com engine.
+
+    Returns the standard search-result dict shape used by the CLI:
+    ``{"query", "results", ...}`` where each result carries
+    title/url/href/content/text/snippet keys.
+
+    Requires the same opt-in as the aggregator engine: ``YDC_API_KEY``
+    (keyed) or ``AGENT_SEARCH_YOUCOM=1`` (keyless free tier).
+    """
+    searcher = MultiEngineSearch()
+    engine_items = searcher._search_youcom(query, max_results)
+
+    results = [
+        {
+            "title": item["title"],
+            "url": item["url"],
+            "href": item["url"],
+            "content": item["snippet"],
+            "text": item["snippet"],
+            "snippet": item["snippet"],
+        }
+        for item in engine_items
+    ]
+
+    return {
+        "query": query,
+        "results": results,
+        "total_results": len(results),
+        "engines_used": ["youcom"] if results else [],
+        "errors": None,
+        "search_time": 0.0,
+    }
