@@ -150,6 +150,17 @@ This will check the site every hour.
 
 ---
 
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `AGENT_SEARCH_ENDPOINT` | No | Whoogle instance URL (default: `http://localhost:15000`) |
+| `AGENT_SEARCH_API_KEY` | No | API key for Pro (hosted) mode |
+| `BING_SEARCH_API_KEY` | No | Bing Web Search API key (enables Bing engine) |
+| `TAVILY_API_KEY` | No | Tavily API key (enables Tavily as a high-priority search engine). Get one at https://app.tavily.com |
+
+---
+
 ## ⚙️ Troubleshooting and Tips
 
 - If you get errors during installation, make sure Python is installed and added to PATH.
